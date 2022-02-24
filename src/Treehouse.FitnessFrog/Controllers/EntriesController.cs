@@ -46,7 +46,7 @@ namespace Treehouse.FitnessFrog.Controllers
                 Date = DateTime.Today
             };
 
-            ViewBag.ActivitiesSelectListItems = new SelectList(Data.Data.Activities, "Id", "Name");
+            SetupActivitiesSalectListItems();
             return View(entry);
         }
 
@@ -54,11 +54,8 @@ namespace Treehouse.FitnessFrog.Controllers
         public ActionResult Add(Entry entry)
         {
            // ModelState.AddModelError("","This is a global message.");
-            if (ModelState.IsValidField("Duration") && entry.Duration <= 0)
-            {
-                ModelState.AddModelError("Duration",
-                    "The Duration field value must be greater than '0'.");
-            }
+            ValidateEntry(entry);
+
             if (ModelState.IsValid)
             {
                 _entriesRepository.AddEntry(entry);
@@ -66,8 +63,22 @@ namespace Treehouse.FitnessFrog.Controllers
                 // TODO Display the Entries List page
                 return RedirectToAction("Index");
             }
-            ViewBag.ActivitiesSelectListItems = new SelectList(Data.Data.Activities, "Id", "Name");
+            SetupActivitiesSalectListItems();
             return View(entry);
+        }
+
+        private void SetupActivitiesSalectListItems()
+        {
+            ViewBag.ActivitiesSelectListItems = new SelectList(Data.Data.Activities, "Id", "Name");
+        }
+
+        private void ValidateEntry(Entry entry)
+        {
+            if (ModelState.IsValidField("Duration") && entry.Duration <= 0)
+            {
+                ModelState.AddModelError("Duration",
+                    "The Duration field value must be greater than '0'.");
+            }
         }
 
         public ActionResult Edit(int? id)
@@ -77,7 +88,27 @@ namespace Treehouse.FitnessFrog.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            return View();
+            Entry entry = _entriesRepository.GetEntry((int)id);
+
+            if (entry == null)
+            {
+                return HttpNotFound();
+            }
+            SetupActivitiesSalectListItems();
+            return View(entry);
+        }
+        [HttpPost]
+        public ActionResult Edit(Entry entry)
+        {
+            ValidateEntry(entry);
+
+            if (ModelState.IsValid)
+            {
+                _entriesRepository.UpdateEntry(entry);
+                return RedirectToAction("Index");
+            }
+            SetupActivitiesSalectListItems();
+            return View(entry);
         }
 
         public ActionResult Delete(int? id)
