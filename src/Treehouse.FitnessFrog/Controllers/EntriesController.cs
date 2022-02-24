@@ -53,33 +53,22 @@ namespace Treehouse.FitnessFrog.Controllers
         [HttpPost]
         public ActionResult Add(Entry entry)
         {
-           // ModelState.AddModelError("","This is a global message.");
             ValidateEntry(entry);
 
             if (ModelState.IsValid)
             {
                 _entriesRepository.AddEntry(entry);
 
-                // TODO Display the Entries List page
+                TempData["Message"] = "Your entry was successfully added!";
+
                 return RedirectToAction("Index");
             }
+
             SetupActivitiesSalectListItems();
+
             return View(entry);
         }
 
-        private void SetupActivitiesSalectListItems()
-        {
-            ViewBag.ActivitiesSelectListItems = new SelectList(Data.Data.Activities, "Id", "Name");
-        }
-
-        private void ValidateEntry(Entry entry)
-        {
-            if (ModelState.IsValidField("Duration") && entry.Duration <= 0)
-            {
-                ModelState.AddModelError("Duration",
-                    "The Duration field value must be greater than '0'.");
-            }
-        }
 
         public ActionResult Edit(int? id)
         {
@@ -105,6 +94,9 @@ namespace Treehouse.FitnessFrog.Controllers
             if (ModelState.IsValid)
             {
                 _entriesRepository.UpdateEntry(entry);
+
+                TempData["Message"] = "Your entry was successfully Updated!";
+
                 return RedirectToAction("Index");
             }
             SetupActivitiesSalectListItems();
@@ -130,7 +122,22 @@ namespace Treehouse.FitnessFrog.Controllers
         {
             _entriesRepository.DeleteEntry(id);
 
+            TempData["Message"] = "Your entry was successfully deleted!";
+
             return RedirectToAction("Index");
+        }
+        private void SetupActivitiesSalectListItems()
+        {
+            ViewBag.ActivitiesSelectListItems = new SelectList(Data.Data.Activities, "Id", "Name");
+        }
+
+        private void ValidateEntry(Entry entry)
+        {
+            if (ModelState.IsValidField("Duration") && entry.Duration <= 0)
+            {
+                ModelState.AddModelError("Duration",
+                    "The Duration field value must be greater than '0'.");
+            }
         }
     }
 }
